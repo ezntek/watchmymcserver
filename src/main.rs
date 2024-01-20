@@ -7,25 +7,21 @@
  * comes AS-IS with NO WARRANTY
  */
 
-use std::sync::{Arc, Mutex};
+use std::path::PathBuf;
 
 use clap::Parser;
-use watchmymcserver::{CliArgs, MinecraftServer};
+use watchmymcserver::{config::Config, *};
 
-fn main() -> anyhow::Result<()> {
-    let server: MinecraftServer = CliArgs::parse().into();
-    let server: Arc<Mutex<MinecraftServer>> = Arc::new(Mutex::new(server));
+#[derive(Parser)]
+#[command(author, version, about, long_about = None)]
+struct CliArgs {
+    #[arg(short, long)]
+    config: Option<PathBuf>,
+}
 
-    let server_ctrlc = server.clone();
-    ctrlc::set_handler(move || {
-        println!("attempting to stop");
-        let mut srv = server_ctrlc.lock().unwrap();
-        srv.stop().unwrap();
-    })?;
-
-    {
-        server.lock().unwrap().start().unwrap();
-    }
-
-    Ok(())
+fn main() {
+    let args = CliArgs::parse();
+    let config = Config::load(args.config).unwrap();
+    let mut mgr = MinecraftServerManager::new(config).unwrap();
+    mgr.start().join().unwrap();
 }
