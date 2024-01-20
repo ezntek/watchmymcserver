@@ -1,0 +1,5 @@
+/target
+mc
+*.log
+*.py
+*stdin*
