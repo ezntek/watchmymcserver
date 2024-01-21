@@ -23,5 +23,5 @@ fn main() {
     let args = CliArgs::parse();
     let config = Config::load(args.config).unwrap();
     let mut mgr = MinecraftServerManager::new(config).unwrap();
-    mgr.start().join().unwrap();
+    mgr.start().unwrap();
 }

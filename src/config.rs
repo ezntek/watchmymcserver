@@ -22,6 +22,8 @@ Config(
     server: Server(
         base: "/var/minecraft/server",             // directory to run the JAR in
         jar: "/var/minecraft/softwares/paper.jar", // server JAR file
+        on: "8:00",                                // when to turn the server on (24h time)
+        off: "21:06",                              // when to turn the server off (24h time)
         log: "/var/log/wmms.log",                  // log
         stdin: "/tmp/wmms_stdin",                  // stdin buffer (don't change if you don't know
                                                    // what you're doing)
@@ -48,6 +50,8 @@ pub struct Server {
     pub jar: PathBuf,
     pub log: PathBuf,
     pub stdin: PathBuf,
+    pub on: String,
+    pub off: String,
 
     pub max_heap_size: u32,
     pub soft_max_heap_size: u32,

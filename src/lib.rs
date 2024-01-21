@@ -12,5 +12,8 @@ pub mod config;
 mod manager;
 mod server;
 
+#[cfg(test)]
+mod tests;
+
 pub use manager::*;
 pub use server::*;

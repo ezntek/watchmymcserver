@@ -33,6 +33,7 @@ pub struct MinecraftServer {
     config: Config,
     log_file: File,
     stdin_file: File,
+    started: bool,
 }
 
 impl MinecraftServer {
@@ -59,20 +60,14 @@ impl MinecraftServer {
 
         Ok(Self {
             config,
+            started: false,
             log_file: out_f,
             stdin_file: in_f,
         })
     }
 
-    pub fn start(&mut self) -> anyhow::Result<()> {
-        let cmd = self.get_cmd();
-        let reader = cmd
-            .stderr_to_stdout()
-            .stdout_capture()
-            .stdin_file(self.stdin_file.try_clone().unwrap())
-            .unchecked()
-            .reader()?;
-        let mut lines = BufReader::new(reader).lines();
+    pub fn start(&mut self) -> io::Result<()> {
+        self.started = true;
 
         {
             let txt = txt_log!("starting server");
@@ -81,6 +76,15 @@ impl MinecraftServer {
                 print!("{txt}");
             }
         }
+
+        let cmd = self.get_cmd();
+        let reader = cmd
+            .stderr_to_stdout()
+            .stdout_capture()
+            .stdin_file(self.stdin_file.try_clone().unwrap())
+            .unchecked()
+            .reader()?;
+        let mut lines = BufReader::new(reader).lines();
 
         while let Some(Ok(line)) = lines.next() {
             let log_line = format!(
@@ -104,9 +108,15 @@ impl MinecraftServer {
         Ok(())
     }
 
-    pub fn stop(&mut self) -> anyhow::Result<()> {
+    pub fn stop(&mut self) -> io::Result<()> {
         self.stdin_file.write_all("stop".as_bytes())?;
+        self.started = false;
+
         Ok(())
+    }
+
+    pub fn started(&self) -> bool {
+        self.started
     }
 
     fn get_cmd(&self) -> duct::Expression {
